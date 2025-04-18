@@ -8,12 +8,30 @@ inputs:
   pipeline-status:
     description: Pipeline status ("success", "failure", etc.)
     required: true
+  job-context:
+    description: Source job (e.g., compile-app or publish-app)
+    required: true
   repository:
     description: GitHub repository
     default: ${{ github.repository }}
   pull-number:
     description: Pull request number
     default: ${{ github.event.pull_request.number }}
+  ref-name:
+    description: GitHub branch name
+    default: ${{ github.ref_name }}
+  actor:
+    description: Triggered by (actor)
+    default: ${{ github.actor }}
+  commit-message:
+    description: Commit message
+    default: ${{ github.event.head_commit.message }}
+  run-id:
+    description: Workflow run ID
+    default: ${{ github.run_id }}
+  environment:
+    description: Target BC environment (optional)
+    default: ${{ vars.ENVIRONMENT }}
 
 runs:
   using: "composite"
@@ -22,13 +40,34 @@ runs:
       shell: bash
       run: |
         if [ "${{ inputs.pipeline-status }}" = "success" ]; then
-          message="Build executed successfully ✅"
+          if [ "${{ inputs.job-context }}" = "compile-app" ]; then
+            title="✅ Compilation Successful"
+            message="AL Application has passed code analysis and unit tests successfully.\n\n📦 *Repo:* \`${{ inputs.repository }}\`\n🔀 *Branch:* \`${{ inputs.ref-name }}\`\n👤 *Actor:* \`${{ inputs.actor }}\`\n📝 *Commit:* \`${{ inputs.commit-message }}\`\n🔗 *GitHub:* [View Run](https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run-id }})"
+          elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
+            title="✅ Published Successfully"
+            message="Application was successfully published to **${{ inputs.environment }}**.\n\n📦 *Repo:* \`${{ inputs.repository }}\`\n🔀 *Branch:* \`${{ inputs.ref-name }}\`\n👤 *Actor:* \`${{ inputs.actor }}\`"
+          else
+            title="✅ Success"
+            message="Pipeline completed successfully."
+          fi
           color="00FF00"
+
         elif [ "${{ inputs.pipeline-status }}" = "failure" ]; then
-          message="Build failed for PR: <a href='https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }}'>Click here for details</a> ❌"
+          if [ "${{ inputs.job-context }}" = "compile-app" ]; then
+            title="❌ Compilation Failed"
+            message="Application failed during code analysis or unit tests.\n\n📦 *Repo:* \`${{ inputs.repository }}\`\n🔀 *Branch:* \`${{ inputs.ref-name }}\`\n👤 *Actor:* \`${{ inputs.actor }}\`\n🔗 *PR:* [View PR](https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }})"
+          elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
+            title="❌ Publish Failed"
+            message="Application could not be published to **${{ inputs.environment }}**.\n\n📦 *Repo:* \`${{ inputs.repository }}\`\n🔀 *Branch:* \`${{ inputs.ref-name }}\`\n👤 *Actor:* \`${{ inputs.actor }}\`\n🔗 *PR:* [View PR](https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }})"
+          else
+            title="❌ Failure"
+            message="Pipeline failed."
+          fi
           color="FF0000"
+
         else
-          message="Pipeline status: ${{ inputs.pipeline-status }}"
+          title="ℹ️ Status: ${{ inputs.pipeline-status }}"
+          message="Job result: ${{ inputs.pipeline-status }}"
           color="CCCCCC"
         fi
 
@@ -38,6 +77,6 @@ runs:
               \"@context\": \"https://schema.org/extensions\",
               \"summary\": \"DevOps Pipeline\",
               \"themeColor\": \"$color\",
-              \"title\": \"DevOps Pipeline\",
+              \"title\": \"$title\",
               \"text\": \"$message\"
             }" ${{ inputs.teams-webhook }}
