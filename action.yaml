@@ -31,7 +31,7 @@ inputs:
     default: ${{ github.run_id }}
   environment:
     description: Target BC environment (optional)
-    default: ${{ vars.ENVIRONMENT }}
+    required: true
 
 runs:
   using: "composite"
