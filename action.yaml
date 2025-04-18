@@ -1,0 +1,43 @@
+name: Teams Notification
+description: Send Microsoft Teams notifications for pipeline results
+
+inputs:
+  teams-webhook:
+    description: Microsoft Teams webhook
+    required: true
+  pipeline-status:
+    description: Pipeline status ("success", "failure", etc.)
+    required: true
+  repository:
+    description: GitHub repository
+    default: ${{ github.repository }}
+  pull-number:
+    description: Pull request number
+    default: ${{ github.event.pull_request.number }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send Teams Notification
+      shell: bash
+      run: |
+        if [ "${{ inputs.pipeline-status }}" = "success" ]; then
+          message="Build executed successfully ✅"
+          color="00FF00"
+        elif [ "${{ inputs.pipeline-status }}" = "failure" ]; then
+          message="Build failed for PR: <a href='https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }}'>Click here for details</a> ❌"
+          color="FF0000"
+        else
+          message="Pipeline status: ${{ inputs.pipeline-status }}"
+          color="CCCCCC"
+        fi
+
+        curl -H 'Content-Type: application/json' \
+        -d "{
+              \"@type\": \"MessageCard\",
+              \"@context\": \"https://schema.org/extensions\",
+              \"summary\": \"DevOps Pipeline\",
+              \"themeColor\": \"$color\",
+              \"title\": \"DevOps Pipeline\",
+              \"text\": \"$message\"
+            }" ${{ inputs.teams-webhook }}
