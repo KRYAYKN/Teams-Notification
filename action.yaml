@@ -40,19 +40,11 @@ runs:
     - name: Send Teams Notification
       shell: bash
       run: |
-        get_branch_name() {
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "${{ github.head_ref }}"
-          else
-            echo "${{ github.ref_name }}"
-          fi
-        }
-
-        BRANCH_NAME=$(get_branch_name)
+        BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF##*/}}"
 
         if [ "${{ inputs.pipeline-status }}" = "success" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
-            title="✅ Compilation Successful"
+            title="Compilation Successful"
             message="Compilation Successful !!!\n"
             message+="Application has passed code analysis and unit tests successfully.\n\n"
             message+="Repo: ${{ inputs.repository }}\n"
@@ -61,21 +53,21 @@ runs:
             message+="Commit: ${{ inputs.commit-message }}\n"
             message+="View Run: https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run-id }}"
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
-            title="✅ Published Successfully"
+            title="Published Successfully"
             message="Application was successfully published to ${{ inputs.environment }}.\n\n"
             message+="Repo: ${{ inputs.repository }}\n"
             message+="Branch: $BRANCH_NAME\n"
             message+="Actor: ${{ inputs.actor }}\n"
             message+="Commit: ${{ inputs.commit-message }}"
           else
-            title="✅ Success"
+            title="Success"
             message="Pipeline completed successfully."
           fi
           color="00FF00"
 
         elif [ "${{ inputs.pipeline-status }}" = "failure" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
-            title="❌ Compilation Failed"
+            title="Compilation Failed"
             message="Compilation Failed !!!\n"
             message+="Application failed during code analysis or unit tests.\n\n"
             message+="Repo: ${{ inputs.repository }}\n"
@@ -84,7 +76,7 @@ runs:
             message+="View PR: https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }}\n"
             message+="Commit: ${{ inputs.commit-message }}"
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
-            title="❌ Publish Failed"
+            title="Publish Failed"
             message="Publish Failed !!!\n"
             message+="Application could not be published to ${{ inputs.environment }}.\n\n"
             message+="Repo: ${{ inputs.repository }}\n"
@@ -93,23 +85,24 @@ runs:
             message+="View PR: https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }}\n"
             message+="Commit: ${{ inputs.commit-message }}"
           else
-            title="❌ Failure"
+            title="Failure"
             message="Pipeline failed."
           fi
           color="FF0000"
 
         else
-          title="ℹ️ Status: ${{ inputs.pipeline-status }}"
+          title="Status: ${{ inputs.pipeline-status }}"
           message="Job result: ${{ inputs.pipeline-status }}"
           color="CCCCCC"
         fi
 
-        curl -H 'Content-Type: application/json' \
-        -d "{
-              \"@type\": \"MessageCard\",
-              \"@context\": \"https://schema.org/extensions\",
-              \"summary\": \"DevOps Pipeline\",
-              \"themeColor\": \"$color\",
-              \"title\": \"$title\",
-              \"text\": \"$message\"
-            }" ${{ inputs.teams-webhook }}
+        payload=$(jq -n --arg title "$title" --arg text "$message" --arg color "$color" '{
+          "@type": "MessageCard",
+          "@context": "https://schema.org/extensions",
+          "summary": "DevOps Pipeline",
+          "themeColor": $color,
+          "title": $title,
+          "text": $text
+        }')
+
+        curl -H "Content-Type: application/json" -d "$payload" "${{ inputs.teams-webhook }}"
