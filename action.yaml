@@ -44,7 +44,7 @@ runs:
 
         if [ "${{ inputs.pipeline-status }}" = "success" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
-            title="✔️ "
+            title="✔️ Compilation Successful"
             summary="AL application compiled and tested successfully."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
             title="✅ Publish Successful"
@@ -57,7 +57,7 @@ runs:
 
         elif [ "${{ inputs.pipeline-status }}" = "failure" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
-            title="✖️ "
+            title="✖️ Compilation Failed"
             summary="Compilation failed during code analysis or unit tests."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
             title="❌ Publish Failed"
@@ -69,7 +69,7 @@ runs:
           color="FF0000"
 
         else
-          title="ℹ️ "
+          title="ℹ️ Pipeline Status"
           summary="Pipeline status: ${{ inputs.pipeline-status }}"
           color="CCCCCC"
         fi
@@ -114,7 +114,7 @@ runs:
                           "items": [
                             {
                               "type": "TextBlock",
-                              "text": "[${runText}](${runUrl})",
+                              "text": "[View Run](https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run-id }})",
                               "wrap": true,
                               "spacing": "Medium"
                             }
@@ -126,7 +126,7 @@ runs:
                           "items": [
                             {
                               "type": "TextBlock",
-                              "text": "[${prText}](${prUrl})",
+                              "text": "[View PR](https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }})",
                               "wrap": true,
                               "spacing": "Medium"
                             }
