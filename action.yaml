@@ -40,8 +40,8 @@ runs:
     - name: Get Commit Message
       shell: bash
       run: |
-        git fetch --no-tags --unshallow
-        COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+        git fetch --no-tags --unshallow || true
+        COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s" 2>/dev/null || echo "unknown")
         echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
 
     - name: Send Teams Notification
@@ -49,6 +49,9 @@ runs:
       run: |
         BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF##*/}}"
         COMMIT_MESSAGE="${COMMIT_MESSAGE:-unknown}"
+
+        RUN_LINK="[View Run](https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run-id }})"
+        PR_LINK="[View PR](https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }})"
 
         if [ "${{ inputs.pipeline-status }}" = "success" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
@@ -90,8 +93,8 @@ runs:
           --arg branch "$BRANCH_NAME" \
           --arg actor "${{ inputs.actor }}" \
           --arg commit "$COMMIT_MESSAGE" \
-          --arg prUrl "https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }}" \
-          --arg runUrl "https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run-id }}" \
+          --arg runLink "$RUN_LINK" \
+          --arg prLink "$PR_LINK" \
           '{
             "type": "message",
             "attachments": [
@@ -118,24 +121,14 @@ runs:
                           "type": "Column",
                           "width": "stretch",
                           "items": [
-                            {
-                              "type": "TextBlock",
-                              "text": "[View Run](" + $runUrl + ")",
-                              "wrap": true,
-                              "spacing": "Medium"
-                            }
+                            { "type": "TextBlock", "text": $runLink, "wrap": true, "spacing": "Medium" }
                           ]
                         },
                         {
                           "type": "Column",
                           "width": "stretch",
                           "items": [
-                            {
-                              "type": "TextBlock",
-                              "text": "[View PR](" + $prUrl + ")",
-                              "wrap": true,
-                              "spacing": "Medium"
-                            }
+                            { "type": "TextBlock", "text": $prLink, "wrap": true, "spacing": "Medium" }
                           ]
                         }
                       ]
