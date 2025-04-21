@@ -24,9 +24,6 @@ inputs:
   actor:
     description: Triggered by (actor)
     default: ${{ github.actor }}
-  commit-message:
-    description: Commit message
-    default: ${{ github.event.head_commit.message }}
   run-id:
     description: Workflow run ID
     default: ${{ github.run_id }}
@@ -37,10 +34,18 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Get Commit Message
+      shell: bash
+      run: |
+        git fetch --no-tags --unshallow
+        COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+        echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+
     - name: Send Teams Notification
       shell: bash
       run: |
         BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF##*/}}"
+        COMMIT_MESSAGE="${COMMIT_MESSAGE:-unknown}"
 
         if [ "${{ inputs.pipeline-status }}" = "success" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
@@ -81,10 +86,8 @@ runs:
           --arg repo "${{ inputs.repository }}" \
           --arg branch "$BRANCH_NAME" \
           --arg actor "${{ inputs.actor }}" \
-          --arg commit "${{ inputs.commit-message }}" \
-          --arg prText "View PR" \
+          --arg commit "$COMMIT_MESSAGE" \
           --arg prUrl "https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }}" \
-          --arg runText "View Run" \
           --arg runUrl "https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run-id }}" \
           '{
             "type": "message",
@@ -114,7 +117,7 @@ runs:
                           "items": [
                             {
                               "type": "TextBlock",
-                              "text": "[View Run](https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run-id }})",
+                              "text": "[View Run](" + $runUrl + ")",
                               "wrap": true,
                               "spacing": "Medium"
                             }
@@ -126,7 +129,7 @@ runs:
                           "items": [
                             {
                               "type": "TextBlock",
-                              "text": "[View PR](https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }})",
+                              "text": "[View PR](" + $prUrl + ")",
                               "wrap": true,
                               "spacing": "Medium"
                             }
