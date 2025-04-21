@@ -56,37 +56,36 @@ runs:
 
         if [ "${{ inputs.pipeline-status }}" = "success" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
-            title="✔️ Compilation Successful"
+            title="Compilation Successful ✅"
             raw_summary="AL application compiled and tested successfully."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
-            title="✔️ Publish Successful"
+            title="Publish Successful ✅"
             raw_summary="App successfully published to ${ENVIRONMENT}."
           else
-            title="✔️ Success"
+            title="Success ✅"
             raw_summary="Pipeline completed successfully."
           fi
           color="Good"
 
         elif [ "${{ inputs.pipeline-status }}" = "failure" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
-            title="✖️ Compilation Failed"
+            title="Compilation Failed ❌"
             raw_summary="Compilation failed during code analysis or unit tests."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
-            title="❌ Publish Failed"
+            title="Publish Failed ❌"
             raw_summary="Publish failed to ${ENVIRONMENT}."
           else
-            title="❌ Pipeline Failed"
+            title="Pipeline Failed ❌"
             raw_summary="Pipeline failed."
           fi
           color="Attention"
 
         else
-          title="ℹ️ Pipeline Status"
+          title="Pipeline Status"
           raw_summary="Pipeline status: ${{ inputs.pipeline-status }}"
           color="Warning"
         fi
 
-        # Remove hidden/unicode characters (like BOM, NBSP, etc.)
         summary=$(echo "$raw_summary" | iconv -c -f utf-8 -t ascii)
 
         payload=$(jq -n \
@@ -110,7 +109,7 @@ runs:
                   "type": "AdaptiveCard",
                   "version": "1.2",
                   "body": [
-                    { "type": "TextBlock", "size": "Large", "weight": "Bolder", "color": $color, "text": $title },
+                    { "type": "TextBlock", "size": "Large", "weight": "Bolder", "text": $title },
                     { "type": "TextBlock", "text": $summary, "wrap": true },
                     { "type": "FactSet", "facts": [
                       { "title": "Repository:", "value": $repo },
