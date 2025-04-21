@@ -44,32 +44,32 @@ runs:
 
         if [ "${{ inputs.pipeline-status }}" = "success" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
-            title="✔️ Compilation Successful"
+            title="Compilation Successful"
             summary="AL application compiled and tested successfully."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
-            title="✔️ Publish Successful"
+            title="Publish Successful"
             summary="App successfully published to ${{ inputs.environment }}."
           else
-            title="✔️ Success"
+            title="Success"
             summary="Pipeline completed successfully."
           fi
           color="00FF00"
 
         elif [ "${{ inputs.pipeline-status }}" = "failure" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
-            title="✖️ Compilation Failed"
+            title="Compilation Failed"
             summary="Compilation failed during code analysis or unit tests."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
-            title="❌ Publish Failed"
+            title="Publish Failed"
             summary="Publish failed to ${{ inputs.environment }}."
           else
-            title="❌ Pipeline Failed"
+            title="Pipeline Failed"
             summary="Pipeline failed."
           fi
           color="FF0000"
 
         else
-          title="ℹ️ Pipeline Status"
+          title="Pipeline Status"
           summary="Pipeline status: ${{ inputs.pipeline-status }}"
           color="CCCCCC"
         fi
