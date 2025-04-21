@@ -49,6 +49,7 @@ runs:
       run: |
         BRANCH_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF##*/}}"
         COMMIT_MESSAGE="${COMMIT_MESSAGE:-unknown}"
+        ENVIRONMENT="${{ inputs.environment }}"
 
         RUN_LINK="[View Run](https://github.com/${{ inputs.repository }}/actions/runs/${{ inputs.run-id }})"
         PR_LINK="[View PR](https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }})"
@@ -56,34 +57,37 @@ runs:
         if [ "${{ inputs.pipeline-status }}" = "success" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
             title="✔️ Compilation Successful"
-            summary="AL application compiled and tested successfully."
+            raw_summary="AL application compiled and tested successfully."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
             title="✔️ Publish Successful"
-            summary="App successfully published to ${{ inputs.environment }}."
+            raw_summary="App successfully published to ${ENVIRONMENT}."
           else
             title="✔️ Success"
-            summary="Pipeline completed successfully."
+            raw_summary="Pipeline completed successfully."
           fi
           color="Good"
 
         elif [ "${{ inputs.pipeline-status }}" = "failure" ]; then
           if [ "${{ inputs.job-context }}" = "compile-app" ]; then
             title="✖️ Compilation Failed"
-            summary="Compilation failed during code analysis or unit tests."
+            raw_summary="Compilation failed during code analysis or unit tests."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
             title="❌ Publish Failed"
-            summary="Publish failed to ${{ inputs.environment }}."
+            raw_summary="Publish failed to ${ENVIRONMENT}."
           else
             title="❌ Pipeline Failed"
-            summary="Pipeline failed."
+            raw_summary="Pipeline failed."
           fi
           color="Attention"
 
         else
           title="ℹ️ Pipeline Status"
-          summary="Pipeline status: ${{ inputs.pipeline-status }}"
+          raw_summary="Pipeline status: ${{ inputs.pipeline-status }}"
           color="Warning"
         fi
+
+        # Remove hidden/unicode characters (like BOM, NBSP, etc.)
+        summary=$(echo "$raw_summary" | iconv -c -f utf-8 -t ascii)
 
         payload=$(jq -n \
           --arg title "$title" \
