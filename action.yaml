@@ -41,7 +41,7 @@ runs:
       shell: bash
       run: |
         git fetch --no-tags --unshallow || true
-        COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s" 2>/dev/null || echo "unknown")
+        COMMIT_MESSAGE=$(git log --no-merges -1 --pretty=format:"%s" 2>/dev/null || echo "unknown")
         echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
 
     - name: Send Teams Notification
