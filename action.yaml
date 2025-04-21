@@ -47,10 +47,10 @@ runs:
             title="✔️ Compilation Successful"
             summary="AL application compiled and tested successfully."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
-            title="✅ Publish Successful"
+            title="✔️ Publish Successful"
             summary="App successfully published to ${{ inputs.environment }}."
           else
-            title="✅ Success"
+            title="✔️ Success"
             summary="Pipeline completed successfully."
           fi
           color="00FF00"
@@ -97,7 +97,7 @@ runs:
                   "type": "AdaptiveCard",
                   "version": "1.2",
                   "body": [
-                    { "type": "TextBlock", "size": "Large", "weight": "Bolder", "color": "Attention", "text": $title },
+                    { "type": "TextBlock", "size": "Large", "weight": "Bolder", "color": "Good", "text": $title },
                     { "type": "TextBlock", "text": $summary, "wrap": true },
                     { "type": "FactSet", "facts": [
                       { "title": "Repository:", "value": $repo },
