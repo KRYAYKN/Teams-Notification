@@ -81,7 +81,7 @@ runs:
           color="Attention"
 
         else
-          title="Pipeline Status"
+          title="Pipeline Status ℹ️"
           raw_summary="Pipeline status: ${{ inputs.pipeline-status }}"
           color="Warning"
         fi
@@ -109,14 +109,23 @@ runs:
                   "type": "AdaptiveCard",
                   "version": "1.2",
                   "body": [
-                    { "type": "TextBlock", "size": "Large", "weight": "Bolder", "text": $title },
+                    {
+                      "type": "TextBlock",
+                      "size": "Large",
+                      "weight": "Bolder",
+                      "color": $color,
+                      "text": $title
+                    },
                     { "type": "TextBlock", "text": $summary, "wrap": true },
-                    { "type": "FactSet", "facts": [
-                      { "title": "Repository:", "value": $repo },
-                      { "title": "Branch:", "value": $branch },
-                      { "title": "Actor:", "value": $actor },
-                      { "title": "Commit:", "value": $commit }
-                    ]},
+                    {
+                      "type": "FactSet",
+                      "facts": [
+                        { "title": "Repository:", "value": $repo },
+                        { "title": "Branch:", "value": $branch },
+                        { "title": "Actor:", "value": $actor },
+                        { "title": "Commit:", "value": $commit }
+                      ]
+                    },
                     {
                       "type": "ColumnSet",
                       "columns": [
@@ -124,14 +133,24 @@ runs:
                           "type": "Column",
                           "width": "stretch",
                           "items": [
-                            { "type": "TextBlock", "text": $runLink, "wrap": true, "spacing": "Medium" }
+                            {
+                              "type": "TextBlock",
+                              "text": $runLink,
+                              "wrap": true,
+                              "spacing": "Medium"
+                            }
                           ]
                         },
                         {
                           "type": "Column",
                           "width": "stretch",
                           "items": [
-                            { "type": "TextBlock", "text": $prLink, "wrap": true, "spacing": "Medium" }
+                            {
+                              "type": "TextBlock",
+                              "text": $prLink,
+                              "wrap": true,
+                              "spacing": "Medium"
+                            }
                           ]
                         }
                       ]
