@@ -55,7 +55,7 @@ runs:
         PR_LINK="[View PR](https://github.com/${{ inputs.repository }}/pull/${{ inputs.pull-number }})"
 
         if [ "${{ inputs.pipeline-status }}" = "success" ]; then
-          if [ "${{ inputs.job-context }}" = "compile-app" ]; then
+          if [ "${{ inputs.job-context }}" = "compile-app-codeAnalyse-unitTests" ]; then
             title="Compilation Successful ✅"
             raw_summary="AL application compiled and tested successfully."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
@@ -68,7 +68,7 @@ runs:
           color="Good"
 
         elif [ "${{ inputs.pipeline-status }}" = "failure" ]; then
-          if [ "${{ inputs.job-context }}" = "compile-app" ]; then
+          if [ "${{ inputs.job-context }}" = "compile-app-codeAnalyse-unitTests" ]; then
             title="Compilation Failed ❌"
             raw_summary="Compilation failed during code analysis or unit tests."
           elif [ "${{ inputs.job-context }}" = "publish-app" ]; then
